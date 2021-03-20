@@ -2,9 +2,9 @@ var mysql = require('mysql');
 
 var pool = mysql.createPool({
     connectionLimit: 10,
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
+    host: `${SCHOOL_JOURNAL_DB_URL}`,
+    user: `${SCHOOL_JOURNAL_DB_USER}`,
+    password: `${SCHOOL_JOURNAL_DB_PASSWORD}`,
     database: 'school_journal_db',
     debug: false
 });
