@@ -1,18 +1,22 @@
 const express = require('express')
 const app = express()
-var dbConnectionPool = require('./mysqlConnectionPool');
+const dbConnectionPool = require('./mysqlConnectionPool');
 
 const serverPort = 8080;
 
 app.get('/teachers', (req, res) => {
-    let connection = dbConnectionPool.getConnection();
+    dbConnectionPool.getConnection(function (err, conn) {
+        if (err) {
+            conn.release();
+            throw err;
+        }
+        conn.query('SELECT * FROM teacher', function (err, rows, fields) {
+            if (err) throw err
 
-    connection.query('SELECT * FROM school_db.teacher', function (err, rows, fields) {
-        if (err) throw err
-
-        res.send(rows)
+            res.send(rows)
+        })
+        conn.release();
     })
-    connection.release()
 })
 
 
