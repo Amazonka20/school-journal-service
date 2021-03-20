@@ -18,7 +18,7 @@ app.use(cors());
 
 app.post('/register', (request, response) => {
     let body = request.body;
-    let encryptedPassword =  crypto.createHash('md5').update(body.password).digest('hex');
+    let encryptedPassword =  getEncryptedPassword(body.password);
     let teacher = [
         [body.first_name, body.last_name, body.login, encryptedPassword, body.position]
     ];
@@ -37,10 +37,14 @@ app.post('/register', (request, response) => {
     });
 });
 
+function getEncryptedPassword(password) {
+    return crypto.createHash('md5').update(password).digest('hex');
+}
+
 app.post('/login', (request, response) => {
     let login = request.body.login;
     let password = request.body.password;
-    let encryptedPassword =  crypto.createHash('md5').update(password).digest('hex');
+    let encryptedPassword =  getEncryptedPassword(password);
 
     getConnection(function (connection) {
         connection.query("SELECT * FROM teacher WHERE login = ? AND password = ?", [login, encryptedPassword],
