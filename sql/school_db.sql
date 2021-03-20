@@ -22,7 +22,7 @@ CREATE TABLE `teacher` (
 DROP TABLE IF EXISTS `classroom`;
 
 CREATE TABLE `classroom` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `room_number` int NOT NULL,
   `floor` int NOT NULL,
   `deleted` tinyint DEFAULT FALSE,
@@ -50,7 +50,7 @@ CREATE TABLE `group` (
 DROP TABLE IF EXISTS `student`;
 
 CREATE TABLE `student` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(255) NOT NULL,
   `group_id` int NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE `student` (
 DROP TABLE IF EXISTS `subject`;
 
 CREATE TABLE `subject` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `hours` int NOT NULL,
   `required` tinyint DEFAULT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE `subject` (
 DROP TABLE IF EXISTS `group_subject`;
 
 CREATE TABLE `group_subject` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `subject_id` int NOT NULL,
   `group_id` int NOT NULL,
   PRIMARY KEY (`id`),
