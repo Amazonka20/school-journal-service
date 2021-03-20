@@ -1,26 +1,18 @@
-const mysql = require('mysql')
 const express = require('express')
 const app = express()
+var dbConnectionPool = require('./mysqlConnectionPool');
 
 const serverPort = 8080;
 
-var connection = mysql.createConnection({
-    host: `${SCHOOL_JOURNAL_DB_URL}`,
-    user: `${SCHOOL_JOURNAL_DB_USER}`,
-    password: `${SCHOOL_JOURNAL_DB_PASSWORD}`,
-    database: 'school_db'
-})
-
-
 app.get('/teachers', (req, res) => {
-    connection.connect()
+    let connection = dbConnectionPool.getConnection();
 
     connection.query('SELECT * FROM school_db.teacher', function (err, rows, fields) {
         if (err) throw err
 
         res.send(rows)
     })
-    connection.end()
+    connection.release()
 })
 
 
