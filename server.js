@@ -1,45 +1,68 @@
 const bodyParser = require('body-parser')
 const cors = require('cors');
+const session = require('express-session');
 const express = require('express');
 
 const getConnection = require('./mysqlConnectionPool');
 const crypto = require('crypto');
 
 const app = express();
+app.use(session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
+}));
 app.use(bodyParser.json());
 app.use(cors());
 
 
-app.get('/teachers', (req, res) => {
-    getConnection(function (conn) {
-        conn.query('SELECT * FROM teacher', function (err, rows) {
-            if (err) throw err;
-
-            res.send(rows);
-        });
-    });
-});
-
-
-app.post('/teachers/register', (req, res) => {
-    let body = req.body;
+app.post('/register', (request, response) => {
+    let body = request.body;
     let encryptedPassword =  crypto.createHash('md5').update(body.password).digest('hex');
     let teacher = [
         [body.first_name, body.last_name, body.login, encryptedPassword, body.position]
     ];
 
-    getConnection(function (conn) {
-        conn.query("INSERT INTO teacher (first_name, last_name, login, password, position) VALUES ?", [teacher],
+    getConnection(function (connection) {
+        connection.query("INSERT INTO teacher (first_name, last_name, login, password, position) VALUES ?", [teacher],
             function (err, rows) {
                 if (err) {
-                    res.status(400).send(err.message);
+                    response.status(400).send(err.message);
                     return;
                 }
 
                 body.id = rows.insertId;
-                res.status(200).send(body);
+                response.status(200).send(body);
             });
     });
+});
+
+app.post('/login', (request, response) => {
+    let login = request.body.login;
+    let password = request.body.password;
+    let encryptedPassword =  crypto.createHash('md5').update(password).digest('hex');
+
+    getConnection(function (connection) {
+        connection.query("SELECT * FROM teacher WHERE login = ? AND password = ?", [login, encryptedPassword],
+            function (err, rows) {
+                if (rows.length > 0) {
+                    request.session.isLoggedIn = true;
+                    request.session.login = login;
+                    response.status(200).end();
+                } else {
+                    response.status(401).send('Incorrect credentials');
+                }
+            });
+    });
+});
+
+app.post('/logout', (request, response) => {
+    if (request.session.isLoggedIn) {
+        request.session = null;
+        response.status(200).end();
+    } else {
+        response.status(400).end();
+    }
 });
 
 
