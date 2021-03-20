@@ -40,13 +40,10 @@ CREATE TABLE `group` (
   `grade` int NOT NULL,
   `specialization` varchar(255) DEFAULT NULL,
   `start_year` int NOT NULL,
-  `created_by` int NOT NULL,
   `deleted` tinyint DEFAULT FALSE,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `name_UNIQUE` (`name`),
-  KEY `user_id_fk_idx` (`created_by`),
-  CONSTRAINT `user_id_fk` FOREIGN KEY (`created_by`) REFERENCES `teacher` (`id`)
+  UNIQUE KEY `name_UNIQUE` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
