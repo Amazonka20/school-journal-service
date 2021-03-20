@@ -69,7 +69,6 @@ CREATE TABLE `subject` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `hours` int NOT NULL,
-  `required` tinyint DEFAULT NULL,
   `classroom_id` int NOT NULL,
   `deleted` tinyint DEFAULT FALSE,
   PRIMARY KEY (`id`),
