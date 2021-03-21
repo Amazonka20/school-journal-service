@@ -75,9 +75,16 @@ app.post('/login', (request, response) => {
 });
 
 
-app.get('/students', authenticateToken, (request, response) => {
+app.get('/students', (request, response) => {
     getConnection(function (connection) {
-        connection.query("SELECT * FROM student",
+        let groupId = request.query.groupId;
+
+        let allStudents = "SELECT s.id, s.first_name, s.last_name, g.id as group_id, g.name as group_name, s.birth_year " +
+            "FROM student as s LEFT JOIN school_journal_db.group as g ON s.group_id = g.id";
+
+        let studentsByGroup = "SELECT s.id, s.first_name, s.last_name, g.id as group_id, g.name as group_name, s.birth_year " +
+            "FROM student as s LEFT JOIN school_journal_db.group as g ON s.group_id = g.id WHERE s.group_id = ?";
+        connection.query(groupId ? studentsByGroup : allStudents, [groupId],
             function (err, rows) {
                 if (err) {
                     response.status(400).send(err.message);
@@ -110,6 +117,19 @@ app.get('/journal', authenticateToken, (request, response) => {
             "LEFT JOIN student as s ON j.student_id = s.id " +
             "LEFT JOIN subject as sb ON j.subject_id = sb.id " +
             "LEFT JOIN school_journal_db.group as g ON s.group_id = g.id",
+            function (err, rows) {
+                if (err) {
+                    response.status(400).send(err.message);
+                    return;
+                }
+                response.status(200).send(rows);
+            });
+    });
+});
+
+app.post('/journal', authenticateToken, (request, response) => {
+    getConnection(function (connection) {
+        connection.query("INSERT INTO journal VALUES()",
             function (err, rows) {
                 if (err) {
                     response.status(400).send(err.message);
