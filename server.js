@@ -1,15 +1,30 @@
 const bodyParser = require('body-parser')
 const cors = require('cors');
-const session = require('express-session');
 const express = require('express');
 
 const getConnection = require('./mysqlConnectionPool');
 const crypto = require('crypto');
+const jwt = require("jsonwebtoken");
 
 const app = express();
-app.use(session({secret: 'keyboard cat', cookie: {maxAge: 60000}}))
 app.use(bodyParser.json());
 app.use(cors());
+
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if (token == null) return res.sendStatus(401)
+
+    jwt.verify(token, "process.env.ACCESS_TOKEN_SECRET", (err, user) => {
+        if (err) {
+            console.log(err)
+            return res.sendStatus(403)
+        }
+        req.user = user
+        next()
+    });
+}
 
 
 app.post('/register', (request, response) => {
@@ -37,6 +52,10 @@ function getEncryptedPassword(password) {
     return crypto.createHash('md5').update(password).digest('hex');
 }
 
+function generateAccessToken(username) {
+    return jwt.sign(username, "process.env.ACCESS_TOKEN_SECRET", { expiresIn: '1800s' });
+}
+
 app.post('/login', (request, response) => {
     let login = request.body.login;
     let password = request.body.password;
@@ -46,11 +65,8 @@ app.post('/login', (request, response) => {
         connection.query("SELECT * FROM teacher WHERE login = ? AND password = ?", [login, encryptedPassword],
             function (err, rows) {
                 if (rows.length > 0) {
-                    request.session.isLoggedIn = true;
-                    request.session.login = login;
-
-                    response.setHeader("sessionId", request.session.id);
-                    response.status(200).send();
+                    const token = generateAccessToken({ login: rows[0].login });
+                    response.status(200).send({"token" : token});
                 } else {
                     response.status(401).send('Incorrect credentials');
                 }
@@ -58,17 +74,8 @@ app.post('/login', (request, response) => {
     });
 });
 
-app.post('/logout', (request, response) => {
-    if (request.session.isLoggedIn) {
-        request.session = null;
-        response.status(200).end();
-    } else {
-        response.status(400).end();
-    }
-});
 
-
-app.get('/students', (request, response) => {
+app.get('/students', authenticateToken, (request, response) => {
     getConnection(function (connection) {
         connection.query("SELECT * FROM student",
             function (err, rows) {
@@ -82,7 +89,7 @@ app.get('/students', (request, response) => {
 });
 
 
-app.get('/journal', (request, response) => {
+app.get('/journal', authenticateToken, (request, response) => {
     getConnection(function (connection) {
         connection.query("SELECT sb.name as subject, s.last_name as student, " +
             "g.name as 'group', j.mark, j.date FROM journal as j " +
