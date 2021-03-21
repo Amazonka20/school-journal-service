@@ -7,18 +7,14 @@ const getConnection = require('./mysqlConnectionPool');
 const crypto = require('crypto');
 
 const app = express();
-app.use(session({
-    secret: 'secret',
-    resave: true,
-    saveUninitialized: true
-}));
+app.use(session({secret: 'keyboard cat', cookie: {maxAge: 60000}}))
 app.use(bodyParser.json());
 app.use(cors());
 
 
 app.post('/register', (request, response) => {
     let body = request.body;
-    let encryptedPassword =  getEncryptedPassword(body.password);
+    let encryptedPassword = getEncryptedPassword(body.password);
     let teacher = [
         [body.first_name, body.last_name, body.login, encryptedPassword, body.position]
     ];
@@ -44,7 +40,7 @@ function getEncryptedPassword(password) {
 app.post('/login', (request, response) => {
     let login = request.body.login;
     let password = request.body.password;
-    let encryptedPassword =  getEncryptedPassword(password);
+    let encryptedPassword = getEncryptedPassword(password);
 
     getConnection(function (connection) {
         connection.query("SELECT * FROM teacher WHERE login = ? AND password = ?", [login, encryptedPassword],
@@ -52,7 +48,9 @@ app.post('/login', (request, response) => {
                 if (rows.length > 0) {
                     request.session.isLoggedIn = true;
                     request.session.login = login;
-                    response.status(200).end();
+
+                    response.setHeader("sessionId", request.session.id);
+                    response.status(200).send();
                 } else {
                     response.status(401).send('Incorrect credentials');
                 }
@@ -69,6 +67,37 @@ app.post('/logout', (request, response) => {
     }
 });
 
+
+app.get('/students', (request, response) => {
+    getConnection(function (connection) {
+        connection.query("SELECT * FROM student",
+            function (err, rows) {
+                if (err) {
+                    response.status(400).send(err.message);
+                    return;
+                }
+                response.status(200).send(rows);
+            });
+    });
+});
+
+
+app.get('/journal', (request, response) => {
+    getConnection(function (connection) {
+        connection.query("SELECT sb.name as subject, s.last_name as student, " +
+            "g.name as 'group', j.mark, j.date FROM journal as j " +
+            "LEFT JOIN student as s ON j.student_id = s.id " +
+            "LEFT JOIN subject as sb ON j.subject_id = sb.id " +
+            "LEFT JOIN school_journal_db.group as g ON s.group_id = g.id",
+            function (err, rows) {
+                if (err) {
+                    response.status(400).send(err.message);
+                    return;
+                }
+                response.status(200).send(rows);
+            });
+    });
+});
 
 const serverPort = 8080;
 
