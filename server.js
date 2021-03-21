@@ -89,6 +89,20 @@ app.get('/students', authenticateToken, (request, response) => {
 });
 
 
+app.get('/groups', authenticateToken, (request, response) => {
+    getConnection(function (connection) {
+        connection.query("SELECT * FROM school_journal_db.group",
+            function (err, rows) {
+                if (err) {
+                    response.status(400).send(err.message);
+                    return;
+                }
+                response.status(200).send(rows);
+            });
+    });
+});
+
+
 app.get('/journal', authenticateToken, (request, response) => {
     getConnection(function (connection) {
         connection.query("SELECT sb.name as subject, s.last_name as student, " +
