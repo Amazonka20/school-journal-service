@@ -112,7 +112,7 @@ app.get('/groups', authenticateToken, (request, response) => {
 
 app.get('/subjects', authenticateToken, (request, response) => {
     getConnection(function (connection) {
-        connection.query("SELECT s.id, s.name, cl.room_number " +
+        connection.query("SELECT s.id, s.name, cl.room_number, cl.floor " +
             "FROM subject as s LEFT JOIN classroom as cl ON s.classroom_id = cl.id",
             function (err, rows) {
                 if (err) {
@@ -127,11 +127,11 @@ app.get('/subjects', authenticateToken, (request, response) => {
 
 app.get('/journal', authenticateToken, (request, response) => {
     getConnection(function (connection) {
-        connection.query("SELECT sb.name as subject, s.last_name as student, " +
+        connection.query("SELECT sb.name as subject, j.id as journal_id, s.last_name as student, " +
             "g.name as 'group', j.mark, j.date FROM journal as j " +
             "LEFT JOIN student as s ON j.student_id = s.id " +
             "LEFT JOIN subject as sb ON j.subject_id = sb.id " +
-            "LEFT JOIN school_journal_db.group as g ON s.group_id = g.id",
+            "LEFT JOIN school_journal_db.group as g ON s.group_id = g.id ORDER BY j.date DESC",
             function (err, rows) {
                 if (err) {
                     response.status(400).send(err.message);
