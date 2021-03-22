@@ -112,7 +112,8 @@ app.get('/groups', authenticateToken, (request, response) => {
 
 app.get('/subjects', authenticateToken, (request, response) => {
     getConnection(function (connection) {
-        connection.query("SELECT * FROM subject",
+        connection.query("SELECT s.id, s.name, cl.room_number " +
+            "FROM subject as s LEFT JOIN classroom as cl ON s.classroom_id = cl.id",
             function (err, rows) {
                 if (err) {
                     response.status(400).send(err.message);
