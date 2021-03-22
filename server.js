@@ -75,7 +75,7 @@ app.post('/login', (request, response) => {
 });
 
 
-app.get('/students', (request, response) => {
+app.get('/students', authenticateToken, (request, response) => {
     getConnection(function (connection) {
         let groupId = request.query.groupId;
 
