@@ -110,6 +110,20 @@ app.get('/groups', authenticateToken, (request, response) => {
 });
 
 
+app.get('/subjects', authenticateToken, (request, response) => {
+    getConnection(function (connection) {
+        connection.query("SELECT * FROM subject",
+            function (err, rows) {
+                if (err) {
+                    response.status(400).send(err.message);
+                    return;
+                }
+                response.status(200).send(rows);
+            });
+    });
+});
+
+
 app.get('/journal', authenticateToken, (request, response) => {
     getConnection(function (connection) {
         connection.query("SELECT sb.name as subject, s.last_name as student, " +
@@ -128,8 +142,12 @@ app.get('/journal', authenticateToken, (request, response) => {
 });
 
 app.post('/journal', authenticateToken, (request, response) => {
+    let body = request.body;
+    let journalEntry = [
+        [body.subject_id, body.student_id, body.mark, new Date().toISOString().slice(0, 19).replace('T', ' ')]
+    ];
     getConnection(function (connection) {
-        connection.query("INSERT INTO journal VALUES()",
+        connection.query("INSERT INTO journal (subject_id, student_id, mark, date) VALUES (?)", journalEntry,
             function (err, rows) {
                 if (err) {
                     response.status(400).send(err.message);

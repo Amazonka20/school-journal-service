@@ -101,13 +101,10 @@ CREATE TABLE `journal` (
   `student_id` int NOT NULL,
   `mark` int DEFAULT NULL,
   `date` datetime NOT NULL,
-  `teacher_id` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `teacher_id_idx` (`teacher_id`),
   KEY `student_id_fk_idx` (`student_id`),
   KEY `subject_id_fk_idx` (`subject_id`),
   CONSTRAINT `fk_journal_student_student_id` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`),
-  CONSTRAINT `fk_journal_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`),
-  CONSTRAINT `fk_journal_teacher_teacher_id` FOREIGN KEY (`teacher_id`) REFERENCES `teacher` (`id`)
+  CONSTRAINT `fk_journal_subject_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subject` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
