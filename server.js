@@ -16,7 +16,7 @@ function authenticateToken(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1]
     if (token == null) return res.sendStatus(401)
 
-    jwt.verify(token, "process.env.ACCESS_TOKEN_SECRET", (err, user) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) {
             console.log(err)
             return res.sendStatus(403)
@@ -53,7 +53,7 @@ function getEncryptedPassword(password) {
 }
 
 function generateAccessToken(username) {
-    return jwt.sign(username, "process.env.ACCESS_TOKEN_SECRET", { expiresIn: '1800s' });
+    return jwt.sign(username, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1800s' });
 }
 
 app.post('/login', (request, response) => {
